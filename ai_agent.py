@@ -1,7 +1,7 @@
 import requests
 
 # ⚠️ PASTE YOUR REAL KEY HERE
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "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"
 
 def get_ai_response(user_message):
 
@@ -15,11 +15,17 @@ def get_ai_response(user_message):
     }
 
     data = {
-        "model": "openai/gpt-4o-mini",   # reliable model
+        "model": "google/gemini-2.0-flash-001",   # free model, no credits needed
         "messages": [
             {
                 "role": "system",
-                "content": "You are an agriculture expert assistant. Give helpful answers."
+                "content": (
+                    "You are an agriculture expert assistant. "
+                    "1. Give VERY SHORT, simple, and easy-to-understand answers suitable for farmers. "
+                    "2. Always reply in the EXACT SAME LANGUAGE that the user speaks. "
+                    "3. You MUST prefix your response with the appropriate BCP 47 language code in brackets, e.g., [en-US], [hi-IN], [te-IN], [ta-IN], [mr-IN], etc. "
+                    "Example: [hi-IN] आपकी फसल के लिए यूरिया का इस्तेमाल करें।"
+                )
             },
             {
                 "role": "user",

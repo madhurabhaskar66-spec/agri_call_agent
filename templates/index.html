@@ -1,67 +1,80 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>🌾 Agriculture Voice Assistant</title>
 </head>
+
 <body>
 
-<h2>🌾 Agriculture Voice Assistant</h2>
+    <h2>🌾 Agriculture Voice Assistant</h2>
 
-<button onclick="startListening()">🎤 Speak</button>
+    <button onclick="startListening()">🎤 Speak</button>
 
-<p><b>You:</b> <span id="userText"></span></p>
-<p><b>AI:</b> <span id="response"></span></p>
+    <p><b>You:</b> <span id="userText"></span></p>
+    <p><b>AI:</b> <span id="response"></span></p>
 
-<script>
+    <script>
 
-// 🔊 TEXT TO SPEECH (Output Voice)
-function speak(text, lang="en-US") {
-    window.speechSynthesis.cancel();
+        // 🔊 TEXT TO SPEECH (Output Voice)
+        function speak(text, lang = "en-US") {
+            window.speechSynthesis.cancel();
 
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = lang;
-    speech.pitch = 1.3;
-    speech.rate = 1;
+            const speech = new SpeechSynthesisUtterance(text);
+            speech.lang = lang;
+            speech.pitch = 1.3;
+            speech.rate = 1;
 
-    window.speechSynthesis.speak(speech);
-}
+            window.speechSynthesis.speak(speech);
+        }
 
 
-// 🎤 SPEECH TO TEXT (Input Voice)
-function startListening() {
+        // 🎤 SPEECH TO TEXT (Input Voice)
+        function startListening() {
 
-    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
 
-    recognition.lang = "auto";   // multilingual
-    recognition.interimResults = false;
+            recognition.lang = navigator.language || "en-US";   // Uses device's default language for multi-lingual input
+            recognition.interimResults = false;
 
-    recognition.start();
+            recognition.start();
 
-    recognition.onresult = async function(event) {
+            recognition.onresult = async function (event) {
 
-        const userSpeech = event.results[0][0].transcript;
+                const userSpeech = event.results[0][0].transcript;
 
-        document.getElementById("userText").innerText = userSpeech;
+                document.getElementById("userText").innerText = userSpeech;
 
-        // Send to backend
-        const response = await fetch("http://127.0.0.1:8000/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ message: userSpeech })
-        });
+                // Send to backend
+                const response = await fetch("http://127.0.0.1:8000/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ message: userSpeech })
+                });
 
-        const data = await response.json();
+                const data = await response.json();
 
-        document.getElementById("response").innerText = data.reply;
+                let replyText = data.reply;
+                let langCode = navigator.language || "en-US";
 
-        // Speak response
-        speak(data.reply);
-    };
-}
+                // Extract language code if AI provides it (e.g., [hi-IN])
+                const langMatch = replyText.match(/^\[([a-zA-Z]{2}-[a-zA-Z]{2,4})\]/);
+                if (langMatch) {
+                    langCode = langMatch[1];
+                    replyText = replyText.substring(langMatch[0].length).trim();
+                }
 
-</script>
+                document.getElementById("response").innerText = replyText;
+
+                // Speak response
+                speak(replyText, langCode);
+            };
+        }
+
+    </script>
 
 </body>
+
 </html>
