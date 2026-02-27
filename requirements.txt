@@ -1,6 +1,4 @@
 fastapi
 uvicorn
-google-generativeai
-gtts
+requests
 python-dotenv
-playsound
